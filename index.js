@@ -35,6 +35,23 @@ app.get('/talker/:id', (req, res) => {
   res.status(200).json(talkerFound);
 });
 
+// requisito 03:
+
+const crypto = require('crypto');
+
+function generateToken() {
+  return crypto.randomBytes(8).toString('hex');
+}
+
+app.post('/login', (req, res) => {
+ const { email, password } = req.body;
+ const token = generateToken();
+
+ if (!email || !password) { return res.status(404).json({ message: 'Digite email e senha' }); }
+
+  res.status(200).json({ token });
+});
+
 app.listen(PORT, () => {
   console.log('Online');
 });
