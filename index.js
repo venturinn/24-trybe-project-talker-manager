@@ -26,6 +26,21 @@ app.get('/talker', async (_req, res) => {
   res.status(200).json(talkersData);
 });
 
+// Requisito 08:
+app.get('/talker/search', validateToken, async (req, res) => {
+  const { q } = req.query;
+  const talkersData = await talkersInfo.getTalker();
+
+  if (q === undefined || q === '') {
+    res.status(200).json(talkersData);
+  }
+
+  const talkerDataFiltered = talkersData.filter((talker) =>
+    talker.name.includes(q));
+
+  res.status(200).json(talkerDataFiltered);
+});
+
 // requisito 02:
 app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
@@ -68,7 +83,7 @@ app.post(
   validateNewTalker.validateNewTalkerTalk,
   validateNewTalker.validateNewTalkerDate,
   validateNewTalker.validateNewTalkerRate,
- async (req, res) => {
+  async (req, res) => {
     const newTalker = req.body;
     const talkersData = await talkersInfo.getTalker();
     newTalker.id = talkersData.length + 1;
@@ -80,35 +95,39 @@ app.post(
 );
 
 // Requisito 06:
-app.put('/talker/:id', 
-validateToken,
-validateNewTalker.validateNewTalkerName,
-validateNewTalker.validateNewTalkerAge,
-validateNewTalker.validateNewTalkerTalk,
-validateNewTalker.validateNewTalkerDate,
-validateNewTalker.validateNewTalkerRate,
-async (req, res) => {
-  const { id } = req.params;
-  const editedTalker = req.body;
-  const talkersData = await talkersInfo.getTalker();
+app.put(
+  '/talker/:id',
+  validateToken,
+  validateNewTalker.validateNewTalkerName,
+  validateNewTalker.validateNewTalkerAge,
+  validateNewTalker.validateNewTalkerTalk,
+  validateNewTalker.validateNewTalkerDate,
+  validateNewTalker.validateNewTalkerRate,
+  async (req, res) => {
+    const { id } = req.params;
+    const editedTalker = req.body;
+    const talkersData = await talkersInfo.getTalker();
 
-  const talkerDataFiltered = talkersData.filter((talker) => talker.id !== Number(id));
+    const talkerDataFiltered = talkersData.filter(
+      (talker) => talker.id !== Number(id),
+    );
 
-  editedTalker.id = Number(id);
-  const editedTalkersData = [...talkerDataFiltered, editedTalker];
-  talkersInfo.addTalker(editedTalkersData);
+    editedTalker.id = Number(id);
+    const editedTalkersData = [...talkerDataFiltered, editedTalker];
+    talkersInfo.addTalker(editedTalkersData);
 
-  res.status(200).json(editedTalker);
-});
+    res.status(200).json(editedTalker);
+  },
+);
 
 // Requisito 07:
-app.delete('/talker/:id', 
-validateToken,
-async (req, res) => {
+app.delete('/talker/:id', validateToken, async (req, res) => {
   const { id } = req.params;
   const talkersData = await talkersInfo.getTalker();
 
-  const talkerDataFiltered = talkersData.filter((talker) => talker.id !== Number(id));
+  const talkerDataFiltered = talkersData.filter(
+    (talker) => talker.id !== Number(id),
+  );
   talkersInfo.addTalker(talkerDataFiltered);
 
   res.status(204).json();
