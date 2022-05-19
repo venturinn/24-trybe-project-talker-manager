@@ -79,6 +79,28 @@ app.post(
   },
 );
 
+// Requisito 06:
+app.put('/talker/:id', 
+validateToken,
+validateNewTalker.validateNewTalkerName,
+validateNewTalker.validateNewTalkerAge,
+validateNewTalker.validateNewTalkerTalk,
+validateNewTalker.validateNewTalkerDate,
+validateNewTalker.validateNewTalkerRate,
+async (req, res) => {
+  const { id } = req.params;
+  const editedTalker = req.body;
+  const talkersData = await talkersInfo.getTalker();
+
+  const talkerDataFiltered = talkersData.filter((talker) => talker.id !== Number(id));
+
+  editedTalker.id = Number(id);
+  const editedTalkersData = [...talkerDataFiltered, editedTalker];
+  talkersInfo.addTalker(editedTalkersData);
+
+  res.status(200).json(editedTalker);
+});
+
 app.listen(PORT, () => {
   console.log('Online');
 });
