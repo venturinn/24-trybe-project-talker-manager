@@ -2,9 +2,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const crypto = require('crypto');
-const getTalker = require('./helpers/talker');
+const talkersInfo = require('./helpers/talker');
+
 const validatePassword = require('./middlewares/validatePassword');
 const validateEmail = require('./middlewares/validateEmail');
+const validateToken = require('./middlewares/validateToken');
+const validateNewTalker = require('./middlewares/validateNewTalker');
 
 const app = express();
 app.use(bodyParser.json());
@@ -18,15 +21,15 @@ app.get('/', (_request, response) => {
 });
 
 // requisito 01:
-app.get('/talker', (_req, res) => {
-  const talkersData = getTalker();
+app.get('/talker', async (_req, res) => {
+  const talkersData = await talkersInfo.getTalker();
   res.status(200).json(talkersData);
 });
 
 // requisito 02:
-app.get('/talker/:id', (req, res) => {
+app.get('/talker/:id', async (req, res) => {
   const { id } = req.params;
-  const talkersData = getTalker();
+  const talkersData = await talkersInfo.getTalker();
   const talkerFound = talkersData.find((talker) => talker.id === Number(id));
 
   if (!talkerFound) {
@@ -39,7 +42,6 @@ app.get('/talker/:id', (req, res) => {
 });
 
 // requisito 03 e 04:
-
 function generateToken() {
   return crypto.randomBytes(8).toString('hex');
 }
@@ -54,6 +56,26 @@ app.post(
     const token = generateToken();
 
     res.status(200).json({ token });
+  },
+);
+
+// requisito 05:
+app.post(
+  '/talker',
+  validateToken,
+  validateNewTalker.validateNewTalkerName,
+  validateNewTalker.validateNewTalkerAge,
+  validateNewTalker.validateNewTalkerTalk,
+  validateNewTalker.validateNewTalkerDate,
+  validateNewTalker.validateNewTalkerRate,
+ async (req, res) => {
+    const newTalker = req.body;
+    const talkersData = await talkersInfo.getTalker();
+    newTalker.id = talkersData.length + 1;
+    const newTalkersData = [...talkersData, newTalker];
+    talkersInfo.addTalker(newTalkersData);
+
+    res.status(201).json(newTalker);
   },
 );
 

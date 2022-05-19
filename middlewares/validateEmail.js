@@ -1,4 +1,4 @@
-// https://stackoverflow.com/questions/940577/javascript-regular-expression-email-validation
+// Ref.: https://stackoverflow.com/questions/940577/javascript-regular-expression-email-validation
 const emailValidationRegex = /^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$/;
 
 const validateEmailExist = (req, res, next) => {
