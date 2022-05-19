@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const rescue = require('express-rescue');
 
 const crypto = require('crypto');
 const talkersInfo = require('./helpers/talker');
@@ -21,13 +22,13 @@ app.get('/', (_request, response) => {
 });
 
 // requisito 01:
-app.get('/talker', async (_req, res) => {
+app.get('/talker', rescue(async (_req, res) => {
   const talkersData = await talkersInfo.getTalker();
   res.status(200).json(talkersData);
-});
+}));
 
 // Requisito 08:
-app.get('/talker/search', validateToken, async (req, res) => {
+app.get('/talker/search', validateToken, rescue(async (req, res) => {
   const { q } = req.query;
   const talkersData = await talkersInfo.getTalker();
 
@@ -39,10 +40,10 @@ app.get('/talker/search', validateToken, async (req, res) => {
     talker.name.includes(q));
 
   res.status(200).json(talkerDataFiltered);
-});
+}));
 
 // requisito 02:
-app.get('/talker/:id', async (req, res) => {
+app.get('/talker/:id', rescue(async (req, res) => {
   const { id } = req.params;
   const talkersData = await talkersInfo.getTalker();
   const talkerFound = talkersData.find((talker) => talker.id === Number(id));
@@ -54,7 +55,7 @@ app.get('/talker/:id', async (req, res) => {
   }
 
   res.status(200).json(talkerFound);
-});
+}));
 
 // requisito 03 e 04:
 function generateToken() {
@@ -67,11 +68,11 @@ app.post(
   validatePassword.validatePasswordFormat,
   validateEmail.validateEmailExist,
   validateEmail.validateEmailFormat,
-  (_req, res) => {
+  rescue((_req, res) => {
     const token = generateToken();
 
     res.status(200).json({ token });
-  },
+  }),
 );
 
 // requisito 05:
@@ -83,7 +84,7 @@ app.post(
   validateNewTalker.validateNewTalkerTalk,
   validateNewTalker.validateNewTalkerDate,
   validateNewTalker.validateNewTalkerRate,
-  async (req, res) => {
+  rescue(async (req, res) => {
     const newTalker = req.body;
     const talkersData = await talkersInfo.getTalker();
     newTalker.id = talkersData.length + 1;
@@ -91,7 +92,7 @@ app.post(
     talkersInfo.addTalker(newTalkersData);
 
     res.status(201).json(newTalker);
-  },
+  }),
 );
 
 // Requisito 06:
@@ -103,7 +104,7 @@ app.put(
   validateNewTalker.validateNewTalkerTalk,
   validateNewTalker.validateNewTalkerDate,
   validateNewTalker.validateNewTalkerRate,
-  async (req, res) => {
+  rescue(async (req, res) => {
     const { id } = req.params;
     const editedTalker = req.body;
     const talkersData = await talkersInfo.getTalker();
@@ -117,11 +118,11 @@ app.put(
     talkersInfo.addTalker(editedTalkersData);
 
     res.status(200).json(editedTalker);
-  },
+  }),
 );
 
 // Requisito 07:
-app.delete('/talker/:id', validateToken, async (req, res) => {
+app.delete('/talker/:id', validateToken, rescue(async (req, res) => {
   const { id } = req.params;
   const talkersData = await talkersInfo.getTalker();
 
@@ -131,6 +132,10 @@ app.delete('/talker/:id', validateToken, async (req, res) => {
   talkersInfo.addTalker(talkerDataFiltered);
 
   res.status(204).json();
+}));
+
+app.use((err, req, res, _next) => {
+  res.status(500).json({ error: `Erro: ${err.message}` });
 });
 
 app.listen(PORT, () => {

@@ -1,7 +1,5 @@
 const fs = require('fs').promises;
 
-// const getTalker = () => JSON.parse(fs.readFileSync('./talker.json', 'utf8'));
-
 const getTalker = () =>
   fs
     .readFile('./talker.json', 'utf8')
@@ -13,7 +11,7 @@ const getTalker = () =>
       console.error(
         `Não foi possível ler o arquivo './talker.json'\n Erro: ${err}`,
       );
-      process.exit(1);
+      return err;
     });
 
 const addTalker = (newTalkersData) => {
