@@ -101,6 +101,19 @@ async (req, res) => {
   res.status(200).json(editedTalker);
 });
 
+// Requisito 07:
+app.delete('/talker/:id', 
+validateToken,
+async (req, res) => {
+  const { id } = req.params;
+  const talkersData = await talkersInfo.getTalker();
+
+  const talkerDataFiltered = talkersData.filter((talker) => talker.id !== Number(id));
+  talkersInfo.addTalker(talkerDataFiltered);
+
+  res.status(204).json();
+});
+
 app.listen(PORT, () => {
   console.log('Online');
 });
